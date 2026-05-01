@@ -1,11 +1,11 @@
 const pool = require('./config');
 
 const controllers = {
-    // Función interna para validar (Mejor práctica: Evitar repetición)
+    // Función interna para validar 
     validateUser(username, email, password) {
         if (!username || !email || !password) throw new Error('Todos los campos son requeridos');
         
-        // Validación de email más robusta
+        // Validación de email 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email) || !email.endsWith('@gmail.com')) {
             throw new Error('Formato de email inválido (debe ser @gmail.com)');
@@ -27,7 +27,7 @@ const controllers = {
     },
 
     async addUser(username, email, password) {
-        this.validateUser(username, email, password); // Usamos la validación
+        this.validateUser(username, email, password); 
         const id = Date.now().toString(); 
         
         try {
@@ -41,7 +41,7 @@ const controllers = {
         }
     },
 
-    // Actualizar usuario[cite: 1]
+    // Actualizar usuario
     async updateUser(username, email, password, id) {
         if (!id) throw new Error('Se requiere el ID para actualizar');
         this.validateUser(username, email, password);
@@ -52,7 +52,7 @@ const controllers = {
                 [username, email, password, id]
             );
             
-            // Informar claramente si el usuario no existe[cite: 1]
+            // Informar claramente si el usuario no existe
             if (result.affectedRows === 0) {
                 throw new Error('No se encontró un usuario con el ID proporcionado');
             }
