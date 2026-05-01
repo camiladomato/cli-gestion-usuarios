@@ -1,24 +1,33 @@
-// controllers.js
 const pool = require('./config');
-const { v4: uuidv4 } = require('uuid'); // Opcional: npm install uuid para ids únicos
 
 const controllers = {
-    // 1. Obtener usuarios
+    // Función interna para validar (Mejor práctica: Evitar repetición)
+    validateUser(username, email, password) {
+        if (!username || !email || !password) throw new Error('Todos los campos son requeridos');
+        
+        // Validación de email más robusta
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email) || !email.endsWith('@gmail.com')) {
+            throw new Error('Formato de email inválido (debe ser @gmail.com)');
+        }
+
+        // Validación de longitud de password
+        if (password.length < 6) {
+            throw new Error('La contraseña debe tener al menos 6 caracteres');
+        }
+    },
+
     async getUsers() {
         try {
             const [rows] = await pool.query('SELECT * FROM users');
             return rows;
         } catch (error) {
-            throw new Error('Error al obtener usuarios: ' + error.message);
+            throw new Error('Error en la base de datos: ' + error.message);
         }
     },
 
-    // 2. Crear usuario
     async addUser(username, email, password) {
-        // Validaciones obligatorias
-        if (!username || !email || !password) throw new Error('Todos los campos son requeridos');
-        if (!email.endsWith('@gmail.com')) throw new Error('El email debe ser @gmail.com');
-
+        this.validateUser(username, email, password); // Usamos la validación
         const id = Date.now().toString(); 
         
         try {
@@ -32,8 +41,29 @@ const controllers = {
         }
     },
 
-    // 3. Eliminar usuario
+    // Actualizar usuario[cite: 1]
+    async updateUser(username, email, password, id) {
+        if (!id) throw new Error('Se requiere el ID para actualizar');
+        this.validateUser(username, email, password);
+
+        try {
+            const [result] = await pool.query(
+                'UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?',
+                [username, email, password, id]
+            );
+            
+            // Informar claramente si el usuario no existe[cite: 1]
+            if (result.affectedRows === 0) {
+                throw new Error('No se encontró un usuario con el ID proporcionado');
+            }
+            return { id, username, email };
+        } catch (error) {
+            throw error;
+        }
+    },
+
     async deleteUser(id) {
+        if (!id) throw new Error('Se requiere el ID para eliminar');
         try {
             const [result] = await pool.query('DELETE FROM users WHERE id = ?', [id]);
             if (result.affectedRows === 0) throw new Error('Usuario no encontrado');
@@ -42,7 +72,6 @@ const controllers = {
             throw error;
         }
     }
-    // 4. 'update' 
 };
 
 module.exports = controllers;

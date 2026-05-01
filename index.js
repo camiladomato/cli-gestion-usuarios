@@ -22,6 +22,11 @@ async function main() {
                 await controllers.deleteUser(id);
                 console.log(`🗑️ Usuario con ID ${id} eliminado.`);
                 break;
+            case 'update': 
+                const [userUpd, emailUpd, passUpd, idUpd] = args;
+                const updated = await controllers.updateUser(userUpd, emailUpd, passUpd, idUpd);
+                console.log('🔄 Usuario actualizado:', updated);
+                break;
 
             default:
                 console.log('Comando no reconocido. Usa: get, add, update o delete.');
